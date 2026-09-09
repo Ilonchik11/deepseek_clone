@@ -24,9 +24,13 @@ export async function POST(req) {
 
     // Connect to the database and create a new chat
     await connectDB();
-    await Chat.create(chatData);
+    const chat = await Chat.create(chatData);
 
-    return NextResponse.json({ success: true, message: "Chat created" });
+    return NextResponse.json({
+      success: true,
+      data: chat,
+      message: "Chat created",
+    });
   } catch (error) {
     return NextResponse.json({ success: false, error: error.message });
   }

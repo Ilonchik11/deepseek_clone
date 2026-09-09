@@ -25,7 +25,7 @@ export const AppContextProvider = ({ children }) => {
 
       const token = await getToken();
 
-      await axios.post(
+      const { data } = await axios.post(
         "/api/chat/create",
         {},
         {
@@ -34,9 +34,25 @@ export const AppContextProvider = ({ children }) => {
           },
         },
       );
-      fetchUsersChats();
+
+      if (data.success) {
+        const newChat = data.data;
+
+        setChats((prevChats) => [newChat, ...prevChats]);
+        setSelectedChat(newChat);
+
+        return newChat;
+      }
+      console.log('create new chat error', data);
+      toast.error(data?.message || "Failed to create chat");
     } catch (error) {
-      toast.error(error.message);
+      console.error("createNewChat error:", error);
+
+      toast.error(
+        error?.response?.data?.message ||
+          error?.message ||
+          "Failed to create chat",
+      );
     }
   };
 
@@ -44,7 +60,7 @@ export const AppContextProvider = ({ children }) => {
     try {
       const token = await getToken();
 
-      const { data } = await axios.post("/api/chat/get", {
+      const { data } = await axios.get("/api/chat/get", {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -69,9 +85,11 @@ export const AppContextProvider = ({ children }) => {
           console.log(data.data[0]);
         }
       } else {
+        console.log('fetchUsersChats Error', data);
         toast.error(data.message);
       }
     } catch (error) {
+      console.log('fetchUsersChats catch Error', error);
       toast.error(error.message);
     }
   };
